@@ -29,6 +29,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
 #include <pcl/io/openni_grabber.h>
 
 #include "opencv2/opencv.hpp"

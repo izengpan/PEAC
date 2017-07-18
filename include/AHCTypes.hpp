@@ -26,6 +26,7 @@
 //
 #pragma once
 
+#define USE_BOOST_SHARED_PTR
 #ifndef USE_BOOST_SHARED_PTR
 #include <memory>
 #else

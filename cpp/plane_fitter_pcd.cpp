@@ -29,6 +29,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <map>
+#include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
@@ -36,7 +39,7 @@
 #include <pcl/common/transforms.h>
 #include <pcl/io/openni_grabber.h>
 
-#include "opencv2/opencv.hpp"
+#include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
 
 #include "AHCPlaneFitter.hpp"
@@ -138,7 +141,8 @@ std::string getNameNoExtension(const std::string &fileName)
 }
 
 void iniLoad(std::string iniFileName) {
-	std::ifstream in(iniFileName);
+	std::ifstream in;
+	in.open(iniFileName);
 	if(!in.is_open()) {
 		std::cout<<"[iniLoad] "<<iniFileName<<" not found, use default parameters!"<<std::endl;
 		return;
@@ -237,7 +241,8 @@ int process() {
 #else
 		std::string cmd="mkdir -p "+outputDir;
 #endif
-		system(cmd.c_str());
+		int i = system(cmd.c_str());
+		printf("The value of system() returned was: %d.\n",i);
 	}
 
 	using global::pf;

@@ -23,3 +23,6 @@ add_executable(plane_fitter_pcd cpp/plane_fitter_pcd.cpp)
 target_link_libraries(plane_fitter_pcd ${PCL_LIBRARIES} ${OpenCV_LIBS})
 # install(TARGETS plane_fitter_pcd DESTINATION bin)
 # install(FILES plane_fitter_pcd.ini DESTINATION bin)
+
+add_executable(plane_fitter_png cpp/plane_fitter_png.cpp)
+target_link_libraries(plane_fitter_png ${PCL_LIBRARIES} ${OpenCV_LIBS})

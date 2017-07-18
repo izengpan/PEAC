@@ -48,3 +48,10 @@ windowHeight=10
 
 # perform refinement of details or not (True=1, False=0)
 doRefine=1
+
+# TUM camera config
+camera_factor=5000.0;
+camera_cx=318.643040;
+camera_cy=255.313989;
+camera_fx=517.306408;
+camera_fy=516.469215;

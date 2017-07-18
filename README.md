@@ -1,6 +1,14 @@
 Fast Plane Extraction Using Agglomerative Hierarchical Clustering (AHC)
 =======================================================================
 
+# How to use
+```shell
+$ mkdir build
+$ cmake ..
+$ make
+$ ./plane_fitter_png ../config/plane_fitter_config.txt ~/Database/rgbd_dataset_freiburg2_pioneer_slam/depth/1311878194.427630.png
+```
+
 Legal Remarks
 -------------
 

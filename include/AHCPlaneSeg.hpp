@@ -35,6 +35,8 @@
 #include "AHCParamSet.hpp"		//depthDisContinuous
 #include "DisjointSet.hpp"	//PlaneSeg::mergeNbsFrom
 
+//#define DEBUG_INIT
+
 namespace ahc {
 
 //return true if d0 and d1 is discontinuous

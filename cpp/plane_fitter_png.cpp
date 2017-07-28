@@ -46,6 +46,8 @@
 #include "AHCPlaneFitter.hpp"
 using ahc::utils::Timer;
 
+#define PRINT_INFO(info, value) std::cout << __FILE__ << ", " << __LINE__ << " : " << (info) << " = " << (value) << std::endl
+
 // pcl::PointCloud interface for our ahc::PlaneFitter
 template<class PointT>
 struct OrganizedImage3D {
@@ -53,12 +55,14 @@ struct OrganizedImage3D {
 	//note: ahc::PlaneFitter assumes mm as unit!!!
 	const double unitScaleFactor;
 
-	OrganizedImage3D(const pcl::PointCloud<PointT>& c) : cloud(c), unitScaleFactor(1) {}
+	OrganizedImage3D(const pcl::PointCloud<PointT>& c) : cloud(c), unitScaleFactor(1000) {}
+	OrganizedImage3D(const pcl::PointCloud<PointT>& c, const double &usf) : cloud(c), unitScaleFactor(usf) {}
 	OrganizedImage3D(const OrganizedImage3D& other) : cloud(other.cloud), unitScaleFactor(other.unitScaleFactor) {}
 
 	inline int width() const { return cloud.width; }
 	inline int height() const { return cloud.height; }
 	inline bool get(const int row, const int col, double& x, double& y, double& z) const {
+		//PRINT_INFO("unitScaleFactor", unitScaleFactor);
 		const PointT& pt=cloud.at(col,row);
 		x=pt.x*unitScaleFactor; y=pt.y*unitScaleFactor; z=pt.z*unitScaleFactor; //TODO: will this slowdown the speed?
 		return pcl_isnan(z)==0; //return false if current depth is NaN

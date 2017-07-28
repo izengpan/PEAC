@@ -19,6 +19,9 @@ add_executable(plane_fitter cpp/plane_fitter.cpp)
 target_link_libraries(plane_fitter ${PCL_LIBRARIES} ${OpenCV_LIBS})
 # install(TARGETS plane_fitter DESTINATION bin)
 
+add_executable(plane_fitter_kinect2 cpp/plane_fitter_kinect2.cpp)
+target_link_libraries(plane_fitter_kinect2 ${PCL_LIBRARIES} ${OpenCV_LIBS})
+
 add_executable(plane_fitter_pcd cpp/plane_fitter_pcd.cpp)
 target_link_libraries(plane_fitter_pcd ${PCL_LIBRARIES} ${OpenCV_LIBS})
 # install(TARGETS plane_fitter_pcd DESTINATION bin)

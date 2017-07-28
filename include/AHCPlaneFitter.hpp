@@ -904,7 +904,7 @@ namespace ahc {
 			cv::cvtColor(dInit,dInit,CV_RGB2BGR);
 			cv::imshow("debug initGraph", dInit);
 			std::stringstream ss;
-			ss<<saveDir<<"/output/db_init"<<std::setw(5)<<std::setfill('0')<<cnt++<<".png";
+			ss << "DEBUG_" << std::setw(5) << std::setfill('0') << cnt++ << ".png";
 			cv::imwrite(ss.str(), dInit);
 #endif
 #ifdef DEBUG_CALC

@@ -43,7 +43,7 @@ using ahc::utils::Timer;
 // pcl::PointCloud interface for our ahc::PlaneFitter
 template<class PointT>
 struct OrganizedImage3D {
-	const pcl::PointCloud<PointT>& cloud;
+	const pcl::PointCloud<PointT> &cloud;
 	//NOTE: pcl::PointCloud from OpenNI uses meter as unit,
 	//while ahc::PlaneFitter assumes mm as unit!!!
 	const double unitScaleFactor;
@@ -51,8 +51,17 @@ struct OrganizedImage3D {
 	OrganizedImage3D(const pcl::PointCloud<PointT>& c) : cloud(c), unitScaleFactor(1000) {}
 	int width() const { return cloud.width; }
 	int height() const { return cloud.height; }
-	bool get(const int row, const int col, double& x, double& y, double& z) const {
-		const PointT& pt=cloud.at(col,row);
+	bool get(const int row, const int col, double& x, double& y, double& z) const
+	{
+		// image mirror
+		int col_local = 0;
+		if(col != cloud.width / 2)
+		{
+			col_local = cloud.width - 1 - col;
+		}
+		else
+			col_local = col;
+		const PointT& pt=cloud.at(col_local,row);
 		x=pt.x; y=pt.y; z=pt.z;
 		return pcl_isnan(z)==0; //return false if current depth is NaN
 	}
@@ -66,14 +75,10 @@ protected:
 	PlaneFitter pf;
 	cv::Mat rgb, seg;
 	bool done;
-	
-	//pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloudMir;
 
 public:
 	MainLoop () : done(false)
-	{
-		//cloudMir.reset(new pcl::PointCloud<pcl::PointXYZRGBA>);
-	}
+	{}
 
 	//process a new frame of point cloud
 	void onNewCloud (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr &cloud)
@@ -85,7 +90,15 @@ public:
 		}
 		for(int i=0; i<(int)cloud->height; ++i) {
 			for(int j=0; j<(int)cloud->width; ++j) {
-				const pcl::PointXYZRGBA& p=cloud->at(j,i);
+				int col_local = 0;
+				if(j != cloud->width / 2)
+				{
+					col_local = cloud->width - 1 - j;
+				}
+				else
+					col_local = j;
+				
+				const pcl::PointXYZRGBA& p=cloud->at(col_local,i);
 				if(!pcl_isnan(p.z)) {
 					rgb.at<cv::Vec3b>(i,j)=cv::Vec3b(p.b,p.g,p.r);
 				} else {
@@ -93,28 +106,6 @@ public:
 				}
 			}
 		}
-		
-		//mirror image
-// 		cloudMir->height = cloud->height;
-// 		cloudMir->width = cloud->width;
-// 		cloudMir->is_dense = cloud->is_dense;
-// 		cloudMir->resize(cloud->height * cloud->width);
-// 		for(size_t row = 0; row < cloud->height; ++row)
-// 		{
-// 			for(size_t col = 0; col < cloud->width / 2; ++col)
-// 			{
-// 				cloudMir->at(col, row) = cloud->at(col, row);
-// 				cloudMir->at(cloud->width - col - 1, row) = cloud->at(cloud->width - col - 1, row);
-// 			}
-// 		}
-		
-// 		for(size_t row = 0; row < cloud->height; ++row)
-// 		{
-// 			for(size_t col = 0; col < cloud->width; ++col)
-// 			{
-// 				cloudMir->at(col, row) = cloud->at(col, row);
-// 			}
-// 		}
 
 		//run PlaneFitter on the current frame of point cloud
 		RGBDImage rgbd(*cloud);

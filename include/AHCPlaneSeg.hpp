@@ -35,7 +35,8 @@
 #include "AHCParamSet.hpp"		//depthDisContinuous
 #include "DisjointSet.hpp"	//PlaneSeg::mergeNbsFrom
 
-//#define DEBUG_INIT
+#define DEBUG_INIT
+//#define DEBUG_CLUSTER
 
 namespace ahc {
 

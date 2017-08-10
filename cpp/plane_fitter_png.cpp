@@ -231,9 +231,8 @@ void processOneFrame(pcl::PointCloud<pcl::PointXYZ>& cloud, const std::string& o
 			pix.b=prgb(0);
 		}
 	}
-	pcl::io::savePCDFileBinary(outputFilePrefix+".seg.pcd", xyzrgb);
+	pcl::io::savePCDFileBinary(outputFilePrefix+"_seg.pcd", xyzrgb);
 	
-	/*
 	if(global::showWindow) {
 		//show frame rate
 		std::stringstream stext;
@@ -243,7 +242,6 @@ void processOneFrame(pcl::PointCloud<pcl::PointXYZ>& cloud, const std::string& o
 		cv::imshow("seg", seg);
 		cv::waitKey();
 	}
-	*/
 }
 
 int process() {
@@ -347,9 +345,13 @@ bool getCloudFromDepthImage(const std::string depth_image, pcl::PointCloud<pcl::
 
             pcl::PointXYZ p;
 
-            p.z = double(d) / camera_factor;
-            p.x = (n - camera_cx) * p.z / camera_fx;
-            p.y = (m - camera_cy) * p.z / camera_fy;
+//             p.z = double(d) / camera_factor;
+//             p.x = (n - camera_cx) * p.z / camera_fx;
+//             p.y = (m - camera_cy) * p.z / camera_fy;
+			
+			p.z = double(d) / camera_factor * 1000;
+			p.x = (n - camera_cx) * p.z / camera_fx;
+			p.y = (m - camera_cy) * p.z / camera_fy;	
 
 			cloud.at(n, m) = p;
         }
@@ -360,6 +362,17 @@ bool getCloudFromDepthImage(const std::string depth_image, pcl::PointCloud<pcl::
 int process_png(const std::string depth_name) {
 	std::cout << "process_png running ..." << std::endl;
 	const double unitScaleFactor = global::iniGet<double>("unitScaleFactor", 1.0f);
+	const std::string outputDir = global::iniGet<std::string>("outputDir", ".");
+	std::cout << "outputDir = " << outputDir << std::endl;
+	{//create outputDir
+#ifdef _WIN32
+		std::string cmd="mkdir "+outputDir;
+#else
+		std::string cmd="mkdir -p " + std::string("output");
+#endif
+		int i = system(cmd.c_str());
+		printf("The value of system() returned was: %d.\n",i);
+	}
 	
 	using global::pf;
 	//setup fitter
@@ -400,7 +413,7 @@ int process_png(const std::string depth_name) {
 		Eigen::Affine3f(Eigen::UniformScaling<float>(
 		(float)unitScaleFactor)));
 
-	std::string outputFilePrefix = "PEAC";
+	std::string outputFilePrefix = "./output/PEAC";
 	processOneFrame(cloud, outputFilePrefix);
 
 	return 0;

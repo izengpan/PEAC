@@ -152,7 +152,7 @@ namespace ahc {
 			maxStep(100000), minSupport(3000),
 			windowWidth(10), windowHeight(10),
 			doRefine(true), erodeType(ERODE_ALL_BORDER),
-			dirtyBlkMbship(true), drawCoarseBorder(false)
+			dirtyBlkMbship(true), drawCoarseBorder(false), saveDir(".")
 		{
 			static const unsigned char default_colors[10][3] =
 			{
@@ -904,8 +904,9 @@ namespace ahc {
 			cv::cvtColor(dInit,dInit,CV_RGB2BGR);
 			cv::imshow("debug initGraph", dInit);
 			std::stringstream ss;
-			ss << "DEBUG_" << std::setw(5) << std::setfill('0') << cnt++ << ".png";
+			ss<<saveDir<<"/output/db_init_"<<std::setw(5)<<std::setfill('0')<<cnt++<<".png";
 			cv::imwrite(ss.str(), dInit);
+			cv::waitKey();
 #endif
 #ifdef DEBUG_CALC
 			this->numNodes.push_back(minQ.size());

@@ -3,7 +3,7 @@
 list=D:\project\data\list.txt
 
 #where to save output files
-outputDir=.
+outputDir=output
 
 # scale unit from m to mm (adjust according to the unit of your .pcd file)
 unitScaleFactor=1000

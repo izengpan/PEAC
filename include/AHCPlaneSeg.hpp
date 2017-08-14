@@ -143,12 +143,6 @@ struct PlaneSeg {
 				{           0,           0,szz-sz*sz*sc}
 			};
 			
-// 			double K[3][3] = {
-// 				{sxx-(2-sc)*sx*sx*sc,sxy-(2-sc)*sx*sy*sc,sxz-(2-sc)*sx*sz*sc},
-// 				{           0,syy-(2-sc)*sy*sy*sc,syz-(2-sc)*sy*sz*sc},
-// 				{           0,           0,szz-(2-sc)*sz*sz*sc}
-// 			};
-			
 			K[1][0]=K[0][1]; K[2][0]=K[0][2]; K[2][1]=K[1][2];
 			double sv[3]={0,0,0};
 			double V[3][3]={0};

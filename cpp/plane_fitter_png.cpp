@@ -55,7 +55,7 @@ struct OrganizedImage3D {
 	//note: ahc::PlaneFitter assumes mm as unit!!!
 	const double unitScaleFactor;
 
-	OrganizedImage3D(const pcl::PointCloud<PointT>& c) : cloud(c), unitScaleFactor(1) {}
+	OrganizedImage3D(const pcl::PointCloud<PointT>& c) : cloud(c), unitScaleFactor(1000) {}
 	OrganizedImage3D(const pcl::PointCloud<PointT>& c, const double &usf) : cloud(c), unitScaleFactor(usf) {}
 	OrganizedImage3D(const OrganizedImage3D& other) : cloud(other.cloud), unitScaleFactor(other.unitScaleFactor) {}
 
@@ -414,11 +414,13 @@ int process_png(const std::string depth_name) {
 //     std::cout << "Point cloud saved." << std::endl;
 // 	return 0;
 	
-	
-	pcl::transformPointCloud<pcl::PointXYZ>(
-		cloud, cloud,
-		Eigen::Affine3f(Eigen::UniformScaling<float>(
-		(float)unitScaleFactor)));
+
+//  这个部分代码的功能和OrganizedImage3D中的unitScaleFactor(1000)作用一样，都是将点云的尺度放大unitScaleFactor倍
+//  试验中发现：点云中3D点的坐标单位越大，则更容易与其他平面融合。因为3D点左边越大，则坐标值就会越小，那么计算得到的mse就会小。
+// 	pcl::transformPointCloud<pcl::PointXYZ>(
+// 		cloud, cloud,
+// 		Eigen::Affine3f(Eigen::UniformScaling<float>(
+// 		(float)unitScaleFactor)));
 
 	std::string outputFilePrefix = "./output/PEAC";
 	processOneFrame(cloud, outputFilePrefix);

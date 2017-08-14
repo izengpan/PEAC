@@ -207,13 +207,33 @@ void processOneFrame(pcl::PointCloud<pcl::PointXYZ>& cloud, const std::string& o
 	double process_ms=timer.toc();
 	std::cout << "Process time : " << process_ms << " ms"<<std::endl;
 	
-	//cv::imshow("seg", seg);
-	//cv::waitKey();
+	// output plane parameters
+	std::cout << "----------- output plane parameters ------------" << std::endl;
+	std::vector<ahc::PlaneSeg::shared_ptr> extractedPlanes = pf.extractedPlanes;
+	std::cout << "extractedPlanes number = " << extractedPlanes.size() << std::endl;
+	for(int i = 0; i < extractedPlanes.size(); ++i)
+	{
+		ahc::PlaneSeg::shared_ptr p = extractedPlanes[i];
+		std::cout << "center: ";
+		for(int idx = 0; idx < 3; ++idx)
+		{
+			std::cout << p->center[idx] << " ";
+		}
+		std::cout << std::endl;
+		
+		std::cout << "normal: ";
+		for(int idx = 0; idx < 3; ++idx)
+		{
+			std::cout << p->normal[idx] << " ";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << "------------------------------------" << std::endl;
 
 	//save seg image
-	//cv::cvtColor(seg,seg,CV_RGB2BGR);
-	//cv::imwrite(outputFilePrefix+".seg.png", seg);
-	//std::cout << "output: " << outputFilePrefix << ".seg.png" << std::endl;
+	cv::cvtColor(seg,seg,CV_RGB2BGR);
+	cv::imwrite(outputFilePrefix+".seg.png", seg);
+	std::cout << "output: " << outputFilePrefix << ".seg.png" << std::endl;
 
 	//save seg cloud
 	std::cout << "cloud.width = " << cloud.width << ", cloud.height = " << cloud.height << std::endl;

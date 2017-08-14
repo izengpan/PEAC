@@ -256,10 +256,10 @@ namespace ahc {
 		 *  \brief print out the current parameters
 		 */
 		void logParams() const {
-// #define TMP_LOG_VAR(var) << #var "="<<(var)<<"\n"
-// 			std::cout<<"[PlaneFitter] Parameters:\n"
-// 			TMP_LOG_VAR(width)
-// 			TMP_LOG_VAR(height)
+#define TMP_LOG_VAR(var) << #var "="<<(var)<<"\n"
+			std::cout<<"[PlaneFitter] Parameters:\n"
+			TMP_LOG_VAR(width)
+			TMP_LOG_VAR(height)
 // 			TMP_LOG_VAR(mergeMSETolerance)
 // 			TMP_LOG_VAR(initMSETolerance)
 // 			TMP_LOG_VAR(depthSigmaFactor)
@@ -270,13 +270,13 @@ namespace ahc {
 // 			TMP_LOG_VAR(simTh_angleMin)
 // 			TMP_LOG_VAR(simTh_angleMax)
 // 			TMP_LOG_VAR(depthChangeFactor)
-// 			TMP_LOG_VAR(maxStep)
-// 			TMP_LOG_VAR(minSupport)
-// 			TMP_LOG_VAR(windowWidth)
-// 			TMP_LOG_VAR(windowHeight)
-// 			TMP_LOG_VAR(erodeType)
-// 			TMP_LOG_VAR(doRefine)<<std::endl;
-// #undef TMP_LOG_VAR
+			TMP_LOG_VAR(maxStep)
+			TMP_LOG_VAR(minSupport)
+			TMP_LOG_VAR(windowWidth)
+			TMP_LOG_VAR(windowHeight)
+			TMP_LOG_VAR(erodeType)
+			TMP_LOG_VAR(doRefine)<<std::endl;
+#undef TMP_LOG_VAR
 		}
 
 		/************************************************************************/

@@ -55,7 +55,7 @@ struct OrganizedImage3D {
 	//note: ahc::PlaneFitter assumes mm as unit!!!
 	const double unitScaleFactor;
 
-	OrganizedImage3D(const pcl::PointCloud<PointT>& c) : cloud(c), unitScaleFactor(1000) {}
+	OrganizedImage3D(const pcl::PointCloud<PointT>& c) : cloud(c), unitScaleFactor(1) {}
 	OrganizedImage3D(const pcl::PointCloud<PointT>& c, const double &usf) : cloud(c), unitScaleFactor(usf) {}
 	OrganizedImage3D(const OrganizedImage3D& other) : cloud(other.cloud), unitScaleFactor(other.unitScaleFactor) {}
 
@@ -65,6 +65,8 @@ struct OrganizedImage3D {
 		//PRINT_INFO("unitScaleFactor", unitScaleFactor);
 		const PointT& pt=cloud.at(col,row);
 		x=pt.x*unitScaleFactor; y=pt.y*unitScaleFactor; z=pt.z*unitScaleFactor; //TODO: will this slowdown the speed?
+		
+		//std::cout << "x = " << x << ", y = " << y << ", z = " << z << std::endl;
 		return pcl_isnan(z)==0; //return false if current depth is NaN
 	}
 };
@@ -198,6 +200,7 @@ void processOneFrame(pcl::PointCloud<pcl::PointXYZ>& cloud, const std::string& o
 
 	//run PlaneFitter on the current frame of point cloud
 	ImageXYZ Ixyz(cloud);
+	std::cout << "ImageXYZ create over!" << std::endl;
 	Timer timer(1000);
 	timer.tic();
 	pf.run(&Ixyz, 0, &seg);
@@ -345,13 +348,9 @@ bool getCloudFromDepthImage(const std::string depth_image, pcl::PointCloud<pcl::
 
             pcl::PointXYZ p;
 
-//             p.z = double(d) / camera_factor;
-//             p.x = (n - camera_cx) * p.z / camera_fx;
-//             p.y = (m - camera_cy) * p.z / camera_fy;
-			
-			p.z = double(d) / camera_factor * 1000;
-			p.x = (n - camera_cx) * p.z / camera_fx;
-			p.y = (m - camera_cy) * p.z / camera_fy;	
+            p.z = double(d) / camera_factor;
+            p.x = (n - camera_cx) * p.z / camera_fx;
+            p.y = (m - camera_cy) * p.z / camera_fy;
 
 			cloud.at(n, m) = p;
         }
@@ -399,6 +398,9 @@ int process_png(const std::string depth_name) {
 	pf.params.angle_far = MACRO_DEG2RAD(global::iniGet("angleDegree_far", MACRO_RAD2DEG(pf.params.angle_far)));
 	pf.params.similarityTh_merge = MACRO_DEG2RAD(global::iniGet("similarityDegreeTh_merge", MACRO_RAD2DEG(pf.params.similarityTh_merge)));
 	pf.params.similarityTh_refine = MACRO_DEG2RAD(global::iniGet("similarityDegreeTh_refine", MACRO_RAD2DEG(pf.params.similarityTh_refine)));
+	
+	pf.params.similarityTh_merge = std::cos(pf.params.similarityTh_merge);
+	pf.params.similarityTh_refine = std::cos(pf.params.similarityTh_refine);
 
 	using global::showWindow;
 	showWindow = global::iniGet("showWindow", true);
@@ -407,6 +409,11 @@ int process_png(const std::string depth_name) {
 
 	pcl::PointCloud<pcl::PointXYZ> cloud;
 	getCloudFromDepthImage(depth_name, cloud);
+	
+// 	pcl::io::savePCDFile( "./output/pointcloud.pcd", cloud );
+//     std::cout << "Point cloud saved." << std::endl;
+// 	return 0;
+	
 	
 	pcl::transformPointCloud<pcl::PointXYZ>(
 		cloud, cloud,

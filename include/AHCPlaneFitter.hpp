@@ -37,11 +37,6 @@
 #include <stdlib.h>
 #include <opencv2/opencv.hpp>
 
-//#define DEBUG_CLUSTER
-//#define DEBUG_CALC
-//#define DEBUG_INIT
-//#define EVAL_SPEED
-
 #include "AHCTypes.hpp"
 #include "AHCPlaneSeg.hpp"
 #include "AHCParamSet.hpp"
@@ -135,9 +130,7 @@ namespace ahc {
 		std::vector<std::pair<int,int> > rfQueue;//for region grow/floodfill, p.first=pixidx, p.second=plid
 		bool drawCoarseBorder;
 		//std::vector<PlaneSeg::Stats> blkStats;
-#if defined(DEBUG_INIT) || defined(DEBUG_CLUSTER)
 		std::string saveDir;
-#endif
 #ifdef DEBUG_CALC
 		std::vector<int>	numNodes;
 		std::vector<int>	numEdges;
@@ -215,9 +208,17 @@ namespace ahc {
 			this->height = points->height();
 			this->width  = points->width();
 			this->ds.reset(new DisjointSet((height/windowHeight)*(width/windowWidth)));
-
+#ifdef DEBUG_INIT
+			std::cout << "PlaneSegMinMSEQueue ..." << std::endl;
+#endif
 			PlaneSegMinMSEQueue minQ;
+#ifdef DEBUG_INIT
+			std::cout << "initGraph ..." << std::endl;
+#endif
 			this->initGraph(minQ);
+#ifdef DEBUG_INIT
+			std::cout << "PlaneSegMinMSEQueue over!" << std::endl;
+#endif
 #ifdef EVAL_SPEED
 			timer.toctic("init time");
 #endif
@@ -775,6 +776,12 @@ namespace ahc {
 						this->width, this->height,
 						this->windowWidth, this->windowHeight,
 						this->params) );
+#ifdef DEBUG_INIT					
+// 					std::cout << "p->mse = " << p->mse << std::endl;
+// 					std::cout << "params.T_mse(ParamSet::P_INIT, p->center[2]) = " << params.T_mse(ParamSet::P_INIT, p->center[2]) << std::endl;
+// 					std::cout << "p->nouse = " << p->nouse << std::endl;
+// 					std::cout << "p->center[2] = " << p->center[2] << std::endl;
+#endif
 					if(p->mse<params.T_mse(ParamSet::P_INIT, p->center[2])
 						&& !p->nouse)
 					{
@@ -838,7 +845,7 @@ namespace ahc {
 #endif
 
 			//2. init edges
-			//first pass, connect neighbors from row direction
+			//first pass, connect neighbors from row direction    //行方向的merge
 			for(int i=0; i<Nh; ++i) {
 				for(int j=1; j<Nw; j+=2) {
 					const int cidx=i*Nw+j;
@@ -848,7 +855,7 @@ namespace ahc {
 					
 					const double similarityTh=params.T_ang(ParamSet::P_INIT, G[cidx]->center[2]);
 					if((j<Nw-1 && G[cidx-1]->normalSimilarity(*G[cidx+1])>=similarityTh) ||
-						(j==Nw-1 && G[cidx]->normalSimilarity(*G[cidx-1])>=similarityTh)) {
+						(j==Nw-1 && G[cidx]->normalSimilarity(*G[cidx-1])>=similarityTh)) {    //这里是在求内积，所以越接近1，表示向量夹角越小
 							G[cidx]->connect(G[cidx-1]);
 							if(j<Nw-1) G[cidx]->connect(G[cidx+1]);
 #ifdef DEBUG_INIT
@@ -868,7 +875,7 @@ namespace ahc {
 					}
 				}
 			}
-			//second pass, connect neighbors from column direction
+			//second pass, connect neighbors from column direction   //列方向的merge
 			for(int j=0; j<Nw; ++j) {
 				for(int i=1; i<Nh; i+=2) {
 					const int cidx=i*Nw+j;
@@ -974,7 +981,7 @@ namespace ahc {
 				PlaneSeg::shared_ptr cand_merge;
 				PlaneSeg::Ptr cand_nb(0);
 				PlaneSeg::NbSet::iterator itr=p->nbs.begin();
-				for(; itr!=p->nbs.end();itr++) {//test merge with all nbs, pick the one with min mse
+				for(; itr!=p->nbs.end();itr++) {//test merge with all nbs, pick the one with min mse  //找到mse最小的邻接
 					PlaneSeg::Ptr nb=(*itr);
 #ifdef DEBUG_CLUSTER
 					{
@@ -984,18 +991,27 @@ namespace ahc {
 #endif
 					//TODO: should we use dynamic similarityTh here?
 					//const double similarityTh=ahc::depthDependNormalDeviationTh(p->center[2],500,4000,M_PI*15/180.0,M_PI/2);
-					if(p->normalSimilarity(*nb) < params.T_ang(ParamSet::P_MERGING, p->center[2])) continue;
+#ifdef DEBUG_CLUSTER
+					std::cout << "p->normalSimilarity(*nb) = " << p->normalSimilarity(*nb) << std::endl;
+					std::cout << "params.T_ang(ParamSet::P_MERGING, p->center[2]) = " << params.T_ang(ParamSet::P_MERGING, p->center[2]) << std::endl;
+					std::cout << "p->center[2] = " << p->center[2] << std::endl;
+#endif
+					if(p->normalSimilarity(*nb) < params.T_ang(ParamSet::P_MERGING, p->center[2])) continue;   //两个向量内积，越小表示夹角越大
+					
 					PlaneSeg::shared_ptr merge(new PlaneSeg(*p, *nb));
 					if(cand_merge==0 || cand_merge->mse>merge->mse ||
 						(cand_merge->mse==merge->mse && cand_merge->N<merge->mse))
 					{
 						cand_merge=merge;
 						cand_nb=nb;
+#ifdef DEBUG_CLUSTER
+						std::cout << "merge: rid = " << p->rid << std::endl;
+#endif
 					}
 				}//for nbs
 #ifdef DEBUG_CLUSTER
 				itr=p->nbs.begin();
-				for(; debug && itr!=p->nbs.end();itr++) {
+				for(; debug && itr!=p->nbs.end();itr++) {  //所有当前节点的邻接中心画圆，并且画直线由当前节点到邻接节点，均为蓝色
 					PlaneSeg::Ptr nb=(*itr);
 					const int n_blkid=nb->rid;
 					const int i=n_blkid/Nw;
@@ -1008,18 +1024,18 @@ namespace ahc {
 				}//for nbs
 #endif
 				//TODO: maybe a better merge condition? such as adaptive threshold on MSE like Falzenszwalb's method
-				if(cand_merge!=0 && cand_merge->mse<params.T_mse(
-					ParamSet::P_MERGING, cand_merge->center[2]))
-				{//merge and add back to minQ
+				if(cand_merge!=0 && cand_merge->mse<params.T_mse(ParamSet::P_MERGING, cand_merge->center[2]))
+				{//merge and add back to minQ   //可以merge
 #ifdef DEBUG_CLUSTER
+					std::cout << "can be merge!" << std::endl;
 					{
 						const int n_blkid=cand_nb->rid;
 						const int i=n_blkid/Nw;
 						const int j=n_blkid-i*Nw;
 						const int mx=j*windowWidth+0.5*(windowWidth-1);
 						const int my=i*windowHeight+0.5*(windowHeight-1);
-						static const cv::Scalar blackColor(0,0,255,1);
-						cv::circle(dGraph, cv::Point(mx,my),2,blackColor,2);
+						static const cv::Scalar blackColor(0,255,0,1);
+						cv::circle(dGraph, cv::Point(mx,my),1,blackColor,2);
 						cv::line(dGraph, cv::Point(cx,cy), cv::Point(mx,my), blackColor,2);
 						std::stringstream ss;
 						ss<<saveDir<<"/output/dGraph_"<<std::setw(5)<<std::setfill('0')<<++dSegCnt<<".png";
@@ -1051,6 +1067,11 @@ namespace ahc {
 					}
 #endif
 				} else {//do not merge, but extract p
+					
+#ifdef DEBUG_CLUSTER
+					std::cout << "do not merge, but p->N = " << p->N << ", this->minSupport = " << this->minSupport << std::endl;
+#endif
+					
 					if(p->N>=this->minSupport) {
 						this->extractedPlanes.push_back(p);
 #ifdef DEBUG_CLUSTER
@@ -1059,7 +1080,7 @@ namespace ahc {
 						const int j=blkid-i*Nw;
 						const int ex=j*windowWidth+0.5*(windowWidth-1);
 						const int ey=i*windowHeight+0.5*(windowHeight-1);
-						static const cv::Scalar blackColor(0,0,0,1);
+						static const cv::Scalar blackColor(200,0,200,1);
 						const int len=3;
 						{
 							cv::line(dGraph, cv::Point(ex-len,ey), cv::Point(ex+len,ey), blackColor, 2);
@@ -1123,7 +1144,7 @@ namespace ahc {
 				std::stringstream ss;
 				ss<<saveDir<<"/output/cluster_"<<std::setw(5)<<std::setfill('0')<<(++dSegCnt)<<".png";
 				cv::imwrite(ss.str(), dSeg);
-				exit(-1);
+				//exit(-1);
 			}
 #endif
 			static PlaneSegSizeCmp sizecmp;

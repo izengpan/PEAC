@@ -27,11 +27,15 @@
 #pragma once
 
 #include "math.h"
+#include <cmath>
+#include <iostream>
 
 namespace ahc {
 
 #define MACRO_DEG2RAD(d) ((d)*M_PI/180.0)
 #define MACRO_RAD2DEG(r) ((r)*180.0/M_PI)
+
+#define PRINTINFO(x) std::cout << __FILE__ << " [ " << __LINE__ << " ] " << #x << " = " << (x) << std::endl
 
 enum InitType {
 	INIT_STRICT=0,	//no nan point is allowed in any valid init blocks

@@ -35,8 +35,10 @@
 #include "AHCParamSet.hpp"		//depthDisContinuous
 #include "DisjointSet.hpp"	//PlaneSeg::mergeNbsFrom
 
-#define DEBUG_INIT
 //#define DEBUG_CLUSTER
+//#define DEBUG_CALC
+//#define DEBUG_INIT
+#define EVAL_SPEED
 
 namespace ahc {
 
@@ -120,7 +122,7 @@ struct PlaneSeg {
 		/**
 		*  \brief PCA-based plane fitting
 		*  
-		*  \param [out] center center of mass of the PlaneSeg
+		*  \param [out] center center of mass of the PlaneSeg  //质心
 		*  \param [out] normal unit normal vector of the PlaneSeg (ensure normal.z>=0)
 		*  \param [out] mse mean-square-error of the plane fitting
 		*  \param [out] curvature defined as in pcl
@@ -140,11 +142,19 @@ struct PlaneSeg {
 				{           0,syy-sy*sy*sc,syz-sy*sz*sc},
 				{           0,           0,szz-sz*sz*sc}
 			};
+			
+// 			double K[3][3] = {
+// 				{sxx-(2-sc)*sx*sx*sc,sxy-(2-sc)*sx*sy*sc,sxz-(2-sc)*sx*sz*sc},
+// 				{           0,syy-(2-sc)*sy*sy*sc,syz-(2-sc)*sy*sz*sc},
+// 				{           0,           0,szz-(2-sc)*sz*sz*sc}
+// 			};
+			
 			K[1][0]=K[0][1]; K[2][0]=K[0][2]; K[2][1]=K[1][2];
 			double sv[3]={0,0,0};
 			double V[3][3]={0};
 			LA::eig33sym(K, sv, V); //!!! first eval is the least one
 			//LA.svd33(K, sv, V);
+			// 使得法向量指向相机
 			if(V[0][0]*center[0]+V[1][0]*center[1]+V[2][0]*center[2]<=0) {//enforce dot(normal,center)<00 so normal always points towards camera
 				normal[0]=V[0][0];
 				normal[1]=V[1][0];
@@ -154,6 +164,7 @@ struct PlaneSeg {
 				normal[1]=-V[1][0];
 				normal[2]=-V[2][0];
 			}
+			
 			mse = sv[0]*sc;
 			curvature=sv[0]/(sv[0]+sv[1]+sv[2]);
 		}
